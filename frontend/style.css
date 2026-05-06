@@ -618,6 +618,29 @@ details[open] .suggested-header::before {
 }
 
 /* Suggested Questions in Sidebar */
+.new-chat-btn {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0;
+    margin-bottom: 1rem;
+    background: none;
+    color: var(--text-secondary);
+    border: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: color 0.2s ease;
+    outline: none;
+}
+
+.new-chat-btn:hover,
+.new-chat-btn:focus {
+    color: var(--primary-color);
+}
+
 .suggested-items {
     display: flex;
     flex-direction: column;
