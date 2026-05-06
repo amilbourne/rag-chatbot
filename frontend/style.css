@@ -245,6 +245,22 @@ header h1 {
     color: var(--text-secondary);
 }
 
+.sources-content a {
+    color: #60a5fa;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.sources-content a::after {
+    content: ' ↗';
+    font-size: 0.7em;
+    vertical-align: super;
+}
+
+.sources-content a:hover {
+    color: #93c5fd;
+}
+
 /* Markdown formatting styles */
 .message-content h1,
 .message-content h2,

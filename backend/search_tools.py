@@ -1,6 +1,7 @@
-from typing import Dict, Any, Optional, Protocol
+from typing import Dict, Any, Optional, Protocol, List
 from abc import ABC, abstractmethod
 from vector_store import VectorStore, SearchResults
+from models import SourceItem
 
 
 class Tool(ABC):
@@ -22,7 +23,8 @@ class CourseSearchTool(Tool):
     
     def __init__(self, vector_store: VectorStore):
         self.store = vector_store
-        self.last_sources = []  # Track sources from last search
+        self.last_sources: List[SourceItem] = []
+        self._search_count = 0
     
     def get_tool_definition(self) -> Dict[str, Any]:
         """Return Anthropic tool definition for this tool"""
@@ -62,6 +64,11 @@ class CourseSearchTool(Tool):
             Formatted search results or error message
         """
         
+        if self._search_count >= 1:
+            return "Search limit reached. You already have the search results. Please provide your complete answer now based on what you found."
+
+        self._search_count += 1
+
         # Use the vector store's unified search interface
         results = self.store.search(
             query=query,
@@ -88,29 +95,40 @@ class CourseSearchTool(Tool):
     def _format_results(self, results: SearchResults) -> str:
         """Format search results with course and lesson context"""
         formatted = []
-        sources = []  # Track sources for the UI
-        
+        sources: List[SourceItem] = []
+
         for doc, meta in zip(results.documents, results.metadata):
             course_title = meta.get('course_title', 'unknown')
             lesson_num = meta.get('lesson_number')
-            
-            # Build context header
+
             header = f"[{course_title}"
             if lesson_num is not None:
                 header += f" - Lesson {lesson_num}"
             header += "]"
-            
-            # Track source for the UI
-            source = course_title
+
+            source_text = course_title
             if lesson_num is not None:
-                source += f" - Lesson {lesson_num}"
-            sources.append(source)
-            
+                source_text += f" - Lesson {lesson_num}"
+
+            url = None
+            if lesson_num is not None:
+                url = self.store.get_lesson_link(course_title, lesson_num)
+            if not url:
+                url = self.store.get_course_link(course_title)
+
+            sources.append(SourceItem(text=source_text, url=url or None))
             formatted.append(f"{header}\n{doc}")
-        
-        # Store sources for retrieval
-        self.last_sources = sources
-        
+
+        # Deduplicate preserving order
+        seen = set()
+        unique_sources: List[SourceItem] = []
+        for s in sources:
+            key = (s.text, s.url)
+            if key not in seen:
+                seen.add(key)
+                unique_sources.append(s)
+
+        self.last_sources = unique_sources
         return "\n\n".join(formatted)
 
 class ToolManager:
@@ -148,7 +166,9 @@ class ToolManager:
         return []
 
     def reset_sources(self):
-        """Reset sources from all tools that track sources"""
+        """Reset sources and search state from all tools"""
         for tool in self.tools.values():
             if hasattr(tool, 'last_sources'):
                 tool.last_sources = []
+            if hasattr(tool, '_search_count'):
+                tool._search_count = 0
