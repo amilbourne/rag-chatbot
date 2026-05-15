@@ -47,6 +47,7 @@
 
 /* Smooth Theme Transitions */
 body,
+.top-bar,
 .sidebar,
 .chat-main,
 .chat-container,
@@ -66,14 +67,42 @@ body,
     box-shadow 0.3s ease;
 }
 
+/* Top Bar */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  height: 56px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.top-bar-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.top-bar-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.top-bar-tagline {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
 /* Theme Toggle Button */
 #themeToggle {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  z-index: 100;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: 1px solid var(--border-color);
   background: var(--surface);
@@ -83,6 +112,7 @@ body,
   align-items: center;
   justify-content: center;
   padding: 0;
+  flex-shrink: 0;
 }
 
 #themeToggle:hover {
@@ -781,6 +811,10 @@ details[open] .suggested-header::before {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .top-bar-tagline {
+    display: none;
+  }
+
   .main-content {
     flex-direction: column;
   }
